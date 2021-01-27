@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+
+  postgres:
+    container_name: "postgres"
+    restart: always
+    image: postgres:12
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=for_metro
+    volumes:
+      - ./postgres-data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  app:
+    container_name: "app"
+    restart: always
+    build: ./app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - postgres
+    entrypoint: ["python", "app.py", "runserver", "-h", "0.0.0.0", "-p", "5000"]
+
+  parser:
+    container_name: "parser"
+    restart: always
+    build: ./parser
+    volumes:
+      - ./parser:/parser
+    depends_on:
+      - postgres
+    entrypoint: ["python", "parser.py"]
